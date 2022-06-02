@@ -14,7 +14,7 @@ from random import randint
 mariadb_connection = mariadb.connect(user='test', password='password', host = 'localhost', database = 'taskapp')
 create_cursor = mariadb_connection.cursor()
 
-#Function declarations
+################################################ Define Function ################################################
 def addTask():
     taskID = int(input("Please input a 2 digit task id: "))
     taskName = str(input("Please input the name of the task: "))
@@ -100,13 +100,24 @@ def viewTask():
         print()
 
 def markTaskAsDone(id):
+    create_cursor.execute("SELECT Task_id FROM task")
+    data = create_cursor.fetchall()
+    taskIDs = []
+    for x in data:
+        taskIDs.append(x[0])
+    if(len(taskIDs)==0):
+        print("There is no data in the database.")
+        return
     late = "Accomplished Late"
     acc = "Accomplished"
-    sql_statement = 'UPDATE task SET Status = CASE WHEN DATEDIFF(CURDATE(), Deadline)<0 THEN %s ELSE %s END WHERE Task_id=%s;'
-    to_update = (late, acc, id)
-    create_cursor.execute(sql_statement, to_update)
-    mariadb_connection.commit()
-    print("Task %s is Marked as DONE." % id)
+    if(id in taskIDs):
+        sql_statement = 'UPDATE task SET Status = CASE WHEN DATEDIFF(CURDATE(), Deadline)<0 THEN %s ELSE %s END WHERE Task_id=%s;'
+        to_update = (late, acc, id)
+        create_cursor.execute(sql_statement, to_update)
+        mariadb_connection.commit()
+        print("Task %s is Marked as DONE." % id)
+    else:
+        print("Task not found in the database.")
 
 def addCategory(id, name):
     defaultStatus = "Not Yet Done"
@@ -116,29 +127,52 @@ def addCategory(id, name):
     mariadb_connection.commit()
     print("Category %s Added!\n" % name)
 
-def editCategory(id,name):
-    sql_statement = 'UPDATE category SET Name=%s WHERE Category_id=%s;'
-    to_update = (newCategName, id)
-    create_cursor.execute(sql_statement, to_update)
-    mariadb_connection.commit()
-    print("Category %s Edited!\n" % name)
+def editCategory(id):
+    create_cursor.execute("SELECT Category_id FROM category")
+    data = create_cursor.fetchall()
+    categoryIDs = []
+    for x in data:
+        categoryIDs.append(x[0])
+    if(len(categoryIDs)==0):
+        print("There is no data in the database.")
+        return
+    if(id in categoryIDs):
+        newCategName = input("Enter New Name for Category %s: " % categoryChoice) 
+        sql_statement = 'UPDATE category SET Name=%s WHERE Category_id=%s;'
+        to_update = (newCategName, id)
+        create_cursor.execute(sql_statement, to_update)
+        mariadb_connection.commit()
+        print("Category %s Edited!\n" % id)
+    else:
+        print("Category not found in database.")
 
 def deleteCategory(id):
-    sql_statement = 'DELETE FROM category WHERE Category_id=%s;'
-    to_delete = (id)
-    create_cursor.execute(sql_statement, (to_delete,))
-    mariadb_connection.commit()
-    sql_statement = 'UPDATE task SET Category_id=999 WHERE Category_id=%s;'
-    to_update = (id)
-    create_cursor.execute(sql_statement, (to_update,))
-    mariadb_connection.commit()
-    print("Goodbye Category %s.\n" % id)
+    create_cursor.execute("SELECT Category_id FROM category")
+    data = create_cursor.fetchall()
+    categoryIDs = []
+    for x in data:
+        categoryIDs.append(x[0])
+    if(len(categoryIDs)==0):
+        print("There is no data in the database.")
+        return
+    if(id in categoryIDs):
+        sql_statement = 'DELETE FROM category WHERE Category_id=%s;'
+        to_delete = (id)
+        create_cursor.execute(sql_statement, (to_delete,))
+        mariadb_connection.commit()
+        sql_statement = 'UPDATE task SET Category_id=999 WHERE Category_id=%s;'
+        to_update = (id)
+        create_cursor.execute(sql_statement, (to_update,))
+        mariadb_connection.commit()
+        print("Successfully deleted category %s.\n" % id)
+    else:
+        print("Category not found in database")
 
 def viewCategory():
     sql_statement = 'SELECT * FROM category;'
     create_cursor.execute(sql_statement)
     category = create_cursor.fetchall()
-    print("=======C A T E G O R Y=======\n")
+    print("======= C A T E G O R Y =======")
     for x in category:
         print("● Category id:\t\t" + str(x[0]))
         print("● Category name:\t" + x[1])
@@ -149,7 +183,7 @@ def viewCategoryTasks(id):
     to_view = (id)
     create_cursor.execute(sql_statement, (to_view,))
     task_rows = create_cursor.fetchall()
-    print("=======T A S K S=======\n")
+    print("======= T A S K S =======")
     for x in task_rows:
         print("■ Task id:\t\t" + str(x[0]))
         print("■ Task name:\t\t" + x[1])
@@ -166,7 +200,7 @@ def addTaskCategory(id1, id2):
     to_add = (id1, id2)
     create_cursor.execute(sql_statement, to_add)
     mariadb_connection.commit()
-    print("Task successfully added to Category %s !" % id1)
+    print("Task successfully added to Category %s!" % id1)
 
 def viewTaskSpecificDate(month, day):
     sql_statement = 'SELECT * FROM task WHERE MONTH(Deadline)=%s AND DAY(Deadline)=%s;'
@@ -188,14 +222,37 @@ def viewTaskSpecificDate(month, day):
         print("Category:\t\t" + str(x[6]))
         print()
 
+def checkCategoryStatus():
+    create_cursor.execute("SELECT COUNT(Task_id) FROM task, category WHERE task.Category_id = category.Category_id AND task.status NOT IN ('Accomplished', 'Accomplished Late') GROUP BY task.Category_id;")
+    numTask = create_cursor.fetchall()
+    accomplishedTasks = []
+    for x in numTask:
+        accomplishedTasks.append(x[0])
+    create_cursor.execute("SELECT Category_id FROM category")
+    data = create_cursor.fetchall()
+    categoryIDs = []
+    for x in data:
+        categoryIDs.append(x[0])
+    
+
+def markLateTasks():
+    print("Update status of tasks that exceeded deadline")
+
+################################################ Main Menu ################################################
+markLateTasks()
 while True:
-    menu = """============ M E N U ============
- [0] Add Task \t\t [6] Edit Category \n [1] Edit Task \t\t [7] Delete Category \n [2] Delete Task \t [8] View Category \n [3] View Task \t\t [9] View Tasks Under Category \n [4] Mark Task as Done \t [10] Insert Task to Category \n [5] Add Category \t [11] View Task per day, month  \n [12] Exit
-================================="""
-    # check when all tasks under category are accomplished then update category status
+    menu = """======================== M E N U =======================
+ [0] Add Task \t\t [6] Edit Category
+ [1] Edit Task \t\t [7] Delete Category
+ [2] Delete Task \t [8] View Category
+ [3] View Task \t\t [9] View Tasks Under Category
+ [4] Mark Task as Done \t [10] Insert Task to Category
+ [5] Add Category \t [11] View Task per day, month
+ [12] Exit
+========================================================"""
+    checkCategoryStatus()
     print(menu)
     userInput = int(input("Choice: "))
-
     if(userInput == 0):
         addTask()
     elif(userInput == 1):
@@ -212,9 +269,8 @@ while True:
         categoryName = input("Enter name of new Category: ")
         addCategory(genCategoryId, categoryName)
     elif(userInput == 6):
-        categoryChoice = input("Enter ID of category to be edited: ")
-        newCategName = input("Enter New Name for Category %d: " % categoryChoice)  
-        editCategory(categoryChoice, newCategName)
+        categoryChoice = input("Enter ID of category to be edited: ") 
+        editCategory(categoryChoice)
     elif(userInput == 7):
         categoryChoice = input("Enter ID of category to be deleted: ")
         deleteCategory(categoryChoice)

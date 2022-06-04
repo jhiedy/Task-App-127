@@ -36,7 +36,7 @@ CREATE TABLE `category` (
 
 LOCK TABLES `category` WRITE;
 /*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES (999,'Default','Not Yet Done');
+INSERT INTO `category` VALUES (453,'Academics','Not Yet Done'),(999,'Default','Done');
 /*!40000 ALTER TABLE `category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -67,6 +67,7 @@ CREATE TABLE `task` (
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
+INSERT INTO `task` VALUES (30,'ACT 2','Activity 2','2022-06-04','2022-06-30','Ongoing',453),(71,'ACT 3','Activity 3','2022-06-04','2022-12-31','Ongoing',453),(91,'ACT 1','Activity 1','2022-06-04','2022-01-31','Missing',453);
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -79,4 +80,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-06-04 19:25:40
+-- Dump completed on 2022-06-04 23:21:02

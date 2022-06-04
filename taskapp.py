@@ -35,7 +35,6 @@ def addTask():
     taskName = str(input("Please input the name of the task: "))
     taskDesc = str(input("Please input description of the task: "))
     taskDeadline = str(input("Please input the deadline of the task (YYYY-MM-DD): "))
-
     the_command = "INSERT INTO task VALUES (" + str(taskID) + ", \"" + taskName + "\", \"" + taskDesc + "\" , CURDATE(), STR_TO_DATE(\"" + taskDeadline + "\" , \"%Y-%m-%d\"), \"Ongoing\", 999)"
 
     create_cursor.execute(the_command)
@@ -144,16 +143,15 @@ def viewTask():
     
     create_cursor.execute("SELECT * FROM task ORDER BY Deadline ASC")
     data = create_cursor.fetchall()
-
+    print("============== T A S K S ==============")
     for x in data:
-        print("Task id:\t\t" + str(x[0]))
-        print("Task name:\t\t" + x[1])
-        print("Task description:\t" + x[2])
-        print("Date posted:\t\t" + str(x[3]))
-        print("Deadline:\t\t" + str(x[4]))
-        print("Status:\t\t\t" + x[5])
-        #Category id for now
-        print("Category:\t\t" + str(x[6]))
+        print("● Task id:\t\t" + str(x[0]))
+        print("● Task name:\t\t" + x[1])
+        print("● Task description:\t" + x[2])
+        print("● Date posted:\t\t" + str(x[3]))
+        print("● Deadline:\t\t" + str(x[4]))
+        print("● Status:\t\t" + x[5])
+        print("● Category:\t\t" + str(x[6]))
         print()
 
 def markTaskAsDone():
@@ -260,9 +258,9 @@ def viewCategoryTasks():
         print("There are no categories in the database.")
         return
     
-    id = input("Enter ID of the category to view: ")
+    id = int(input("Enter ID of the category to view: "))
 
-    if(id=="999"):
+    if(id==999):
         print("You cannot edit the default category.")
         return
 
@@ -287,7 +285,6 @@ def viewCategoryTasks():
         print("■ Date posted:\t\t" + str(x[3]))
         print("■ Deadline:\t\t" + str(x[4]))
         print("■ Status:\t\t" + x[5])
-        #Category id for now
         print("■ Category:\t\t" + str(x[6]))
         print()
 
@@ -348,20 +345,18 @@ def viewTaskSpecificDate():
     print("===============================")
 
     for x in specified_rows:
-        print("Task id:\t\t" + str(x[0]))
-        print("Task name:\t\t" + x[1])
-        print("Task description:\t" + x[2])
-        print("Date posted:\t\t" + str(x[3]))
-        print("Deadline:\t\t" + str(x[4]))
-        print("Status:\t\t\t" + x[5])
-        #Category id for now
-        print("Category:\t\t" + str(x[6]))
+        print("ඞ Task id:\t\t" + str(x[0]))
+        print("ඞ Task name:\t\t" + x[1])
+        print("ඞ Task description:\t" + x[2])
+        print("ඞ Date posted:\t\t" + str(x[3]))
+        print("ඞ Deadline:\t\t" + str(x[4]))
+        print("ඞ Status:\t\t" + x[5])
+        print("ඞ Category:\t\t" + str(x[6]))
         print()
 
 def checkCategoryStatus():
-    create_cursor.execute("SELECT Category_id FROM category WHERE Status = \"Not Yet Done\"")
+    create_cursor.execute("SELECT Category_id FROM category")
     data = create_cursor.fetchall()
-
     for x in data:
         categoryID = x[0]
         # if(categoryID!=999):
@@ -384,6 +379,7 @@ def markLateTasks():
 ############################################### Main Menu ################################################
 markLateTasks()
 while True:
+    checkCategoryStatus()
     menu = """======================== M E N U =======================
  [0] Add Task \t\t [6] Edit Category
  [1] Edit Task \t\t [7] Delete Category
@@ -393,7 +389,6 @@ while True:
  [5] Add Category \t [11] View Task per day, month
  [12] Exit
 ========================================================"""
-    checkCategoryStatus()
     print(menu)
     userInput = int(input("Choice: "))
     if(userInput == 0):

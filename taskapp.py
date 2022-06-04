@@ -172,7 +172,7 @@ def markTaskAsDone():
     acc = "Accomplished"
     
     if(id in taskIDs):
-        sql_statement = 'UPDATE task SET Status = CASE WHEN DATEDIFF(CURDATE(), Deadline)<0 THEN %s ELSE %s END WHERE Task_id=%s;'
+        sql_statement = 'UPDATE task SET Status = CASE WHEN DATEDIFF(CURDATE(), Deadline)>0 THEN %s ELSE %s END WHERE Task_id=%s;'
         to_update = (late, acc, id)
         create_cursor.execute(sql_statement, to_update)
         mariadb_connection.commit()
@@ -359,19 +359,26 @@ def viewTaskSpecificDate():
         print()
 
 def checkCategoryStatus():
-    create_cursor.execute("SELECT COUNT(Task_id) FROM task, category WHERE task.Category_id = category.Category_id AND task.status NOT IN ('Accomplished', 'Accomplished Late') GROUP BY task.Category_id;")
-    numTask = create_cursor.fetchall()
-    accomplishedTasks = []
-    for x in numTask:
-        accomplishedTasks.append(x[0])
-    create_cursor.execute("SELECT Category_id FROM category")
+    create_cursor.execute("SELECT Category_id FROM category WHERE Status = \"Not Yet Done\"")
     data = create_cursor.fetchall()
-    categoryIDs = []
-    for x in data:
-        categoryIDs.append(x[0])
-    
 
+    for x in data:
+        categoryID = x[0]
+        # if(categoryID!=999):
+        create_cursor.execute("SELECT Task_id FROM task WHERE Status NOT IN (\"Accomplished\", \"Accomplished Late\") AND Category_id = %s;" % str(categoryID))
+        numTask = create_cursor.fetchall()
+        if(len(numTask)==0):
+            create_cursor.execute("UPDATE category SET Status=\"Done\" WHERE Category_id=%s;" % str(categoryID))    
+            mariadb_connection.commit()
+        else:
+            create_cursor.execute("UPDATE category SET Status=\"Not Yet Done\" WHERE Category_id=%s;" % str(categoryID))    
+            mariadb_connection.commit()
+
+
+    
 def markLateTasks():
+    create_cursor.execute("UPDATE task SET Status = \"Missing\" WHERE DATEDIFF(CURDATE(), Deadline) > 0 AND Status NOT IN (\"Accomplished\", \"Accomplished Late\");")    
+    mariadb_connection.commit()
     print("Update status of tasks that exceeded deadline")
 
 ############################################### Main Menu ################################################
@@ -419,7 +426,6 @@ while True:
         break
     else:
         print("Invalid Choice. Enter Again.")
-
 
 
 

@@ -136,6 +136,7 @@ def deleteTask():
     
         create_cursor.execute(the_command)
         mariadb_connection.commit()
+        print("Task deleted successfully.")
     else:
         print("The Task id you inputted is not in the database.")
 

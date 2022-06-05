@@ -11,7 +11,7 @@ import mysql.connector as mariadb
 from random import randint
 
 #Create mysql connection and define cursor
-mariadb_connection = mariadb.connect(user='test', password='password', host = 'localhost', database = 'task_record')
+mariadb_connection = mariadb.connect(user='test', password='password', host = 'localhost', database = 'taskapp')
 create_cursor = mariadb_connection.cursor()
 
 ################################################ Define Function ################################################
@@ -199,7 +199,14 @@ def editCategory():
         return
 
     id = int(input("Enter ID of category to be edited: ") )
-    
+    sql_statement = 'SELECT * FROM category WHERE Category_id = %s;' % id
+    create_cursor.execute(sql_statement)
+    category = create_cursor.fetchall()
+    print("======= C A T E G O R Y =======")
+    for x in category:
+        print("● Category id:\t\t" + str(x[0]))
+        print("● Category name:\t" + x[1])
+        print("● Status:\t\t" + x[2] + "\n")
     if(id in categoryIDs):
         newCategName = input("Enter New Name for Category %s: " % str(id)) 
         sql_statement = 'UPDATE category SET Name=%s WHERE Category_id=%s;'
@@ -220,6 +227,7 @@ def deleteCategory():
         print("There is no data in the database.")
         return
     
+    viewCategory()
     id = int(input("Enter ID of category to be deleted: "))
     
     if(id in categoryIDs):

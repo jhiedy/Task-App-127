@@ -11,7 +11,7 @@ import mysql.connector as mariadb
 from random import randint
 
 #Create mysql connection and define cursor
-mariadb_connection = mariadb.connect(user='test', password='password', host = 'localhost', database = 'taskapp')
+mariadb_connection = mariadb.connect(user='test', password='password', host = 'localhost', database = 'task_record')
 create_cursor = mariadb_connection.cursor()
 
 ################################################ Define Function ################################################
